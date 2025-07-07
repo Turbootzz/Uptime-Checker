@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -14,8 +15,17 @@ func main() {
 		return
 	}
 
-	for _, url := range urls {
-		checkURL(url)
+	interval := 30 * time.Second
+
+	fmt.Printf("Starting uptime checker with an interval of %s...\n", interval)
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	checkAll(urls)
+
+	for range ticker.C {
+		checkAll(urls)
 	}
 }
 
@@ -31,5 +41,12 @@ func checkURL(url string) {
 		fmt.Printf("URL %s is reachable.\n", url)
 	} else {
 		fmt.Printf("URL %s returned status code: %d\n", url, resp.StatusCode)
+	}
+}
+
+func checkAll(urls []string) {
+	fmt.Println("----- New check -----")
+	for _, url := range urls {
+		checkURL(url)
 	}
 }
